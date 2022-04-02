@@ -15,14 +15,11 @@ type wordConverted struct {
 }
 
 func Top10(s string) []string {
-
 	lines := re.FindAllString(s, -1)
 	words := []string{}
 	for _, line := range lines {
 		wordsLine := strings.Fields(line)
-		for _, word := range wordsLine {
-			words = append(words, word)
-		}
+		words = append(words, wordsLine...)
 	}
 
 	wordMap := make(map[string]int)
@@ -39,14 +36,13 @@ func Top10(s string) []string {
 	sort.Slice(wordSlice, func(i, j int) bool {
 		if wordSlice[i].value == wordSlice[j].value {
 			return strings.Compare(wordSlice[i].key, wordSlice[j].key) == -1
-		} else {
-			return wordSlice[i].value > wordSlice[j].value
 		}
+		return wordSlice[i].value > wordSlice[j].value
 	})
 
 	n := int(math.Min(10, float64(len(wordSlice))))
 	wordSlice = wordSlice[:n]
-	var keys []string
+	keys := []string{}
 	for _, word := range wordSlice {
 		keys = append(keys, word.key)
 	}
