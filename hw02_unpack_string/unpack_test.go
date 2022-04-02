@@ -43,3 +43,59 @@ func TestUnpackInvalidString(t *testing.T) {
 		})
 	}
 }
+
+func TestUnpackEmptyOut(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{input: "a0", expected: ""},
+		{input: "a0b0", expected: ""},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.input, func(t *testing.T) {
+			result, err := Unpack(tc.input)
+			require.NoError(t, err)
+			require.Equal(t, tc.expected, result)
+		})
+	}
+}
+
+func TestUnpackWithSymbols(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{input: "-2!3a5", expected: "--!!!aaaaa"},
+		{input: "zz0$4", expected: "z$$$$"},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.input, func(t *testing.T) {
+			result, err := Unpack(tc.input)
+			require.NoError(t, err)
+			require.Equal(t, tc.expected, result)
+		})
+	}
+}
+
+func TestUnpackCapLetters(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{input: "AAA0Z3", expected: "AAZZZ"},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.input, func(t *testing.T) {
+			result, err := Unpack(tc.input)
+			require.NoError(t, err)
+			require.Equal(t, tc.expected, result)
+		})
+	}
+}
