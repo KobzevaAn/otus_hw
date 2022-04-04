@@ -1,6 +1,7 @@
 package hw03frequencyanalysis
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -78,5 +79,33 @@ func TestTop10(t *testing.T) {
 			}
 			require.Equal(t, expected, Top10(text))
 		}
+	})
+}
+
+func TestTop10oneWord(t *testing.T) {
+	t.Run("one word", func(t *testing.T) {
+		expected := []string{"test"}
+		require.Equal(t, expected, Top10("test"))
+	})
+}
+
+func TestTop10Shorter(t *testing.T) {
+	t.Run("shorter than 10 and different register", func(t *testing.T) {
+		expected := []string{"A", "AA", "AAB", "AAa", "B", "BK", "a", "b", "k"}
+		require.Equal(t, expected, Top10("A  b          a B  AAa BK  k AA AAB"))
+	})
+}
+
+func TestTop10Longer(t *testing.T) {
+	t.Run("longer than 10", func(t *testing.T) {
+		wordsList := []string{"ААА", "ААБ", "ААВ", "АБ", "АВ", "A", "Б", "В", "ЮЯ", "Я", "ЯЯЯ"}
+		builder := strings.Builder{}
+		for _, word := range wordsList {
+			lines := strings.Repeat(word+" ", 2)
+			builder.WriteString(lines)
+		}
+		text := builder.String()
+		expected := []string{"A", "ААА", "ААБ", "ААВ", "АБ", "АВ", "Б", "В", "ЮЯ", "Я"}
+		require.Equal(t, expected, Top10(text))
 	})
 }
