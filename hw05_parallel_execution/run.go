@@ -10,19 +10,19 @@ var ErrErrorsLimitExceeded = errors.New("errors limit exceeded")
 type Task func() error
 
 type Counter struct {
-	sync.RWMutex
-	v int
+	mu sync.RWMutex
+	v  int
 }
 
 func (counter *Counter) Store() {
-	counter.Lock()
-	defer counter.Unlock()
+	counter.mu.Lock()
+	defer counter.mu.Unlock()
 	counter.v++
 }
 
 func (counter *Counter) Load() int {
-	counter.RLock()
-	defer counter.RUnlock()
+	counter.mu.RLock()
+	defer counter.mu.RUnlock()
 	v := counter.v
 	return v
 }
