@@ -20,7 +20,7 @@ func TestRunCmd(t *testing.T) {
 	})
 
 	t.Run("no args", func(t *testing.T) {
-		err := ioutil.WriteFile(testFile, []byte("#!/usr/bin/env bash\ngrep"), 0644)
+		err := ioutil.WriteFile(testFile, []byte("#!/usr/bin/env bash\ngrep"), 0o644)
 		if err != nil {
 			fmt.Println(err)
 		}
