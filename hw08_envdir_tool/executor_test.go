@@ -1,31 +1,40 @@
 package main
 
 import (
+	"fmt"
+	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
+const (
+	testFile = "test_file.sh"
+)
+
 func TestRunCmd(t *testing.T) {
-	t.Run("exit code -1", func(t *testing.T) {
-		var env Environment
-		cmd := []string{
-			"qwerty",
-			"-a",
-		}
-
-		code := RunCmd(cmd, env)
-		require.Equal(t, -1, code)
+	t.Run("no command", func(t *testing.T) {
+		code := RunCmd([]string{}, Environment{})
+		require.Equal(t, ExitCodeError, code)
 	})
 
-	t.Run("exit code 0", func(t *testing.T) {
-		var env Environment
-		cmd := []string{
-			"ls",
-			"-a",
+	t.Run("no args", func(t *testing.T) {
+		err := ioutil.WriteFile(testFile, []byte("#!/usr/bin/env bash\ngrep"), 0644)
+		if err != nil {
+			fmt.Println(err)
 		}
 
-		code := RunCmd(cmd, env)
-		require.Equal(t, 0, code)
+		t.Cleanup(remove)
+		args := []string{"bash", testFile}
+
+		code := RunCmd(args, Environment{})
+		require.Equal(t, 2, code)
 	})
+}
+
+func remove() {
+	if err := os.Remove(testFile); err != nil {
+		fmt.Println(err)
+	}
 }
