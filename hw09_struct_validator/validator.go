@@ -91,7 +91,7 @@ func Validate(v interface{}) error {
 
 		fv := vr.Field(i)
 
-		switch f.Type.Kind() { //nolint
+		switch f.Type.Kind() { 
 		case reflect.String:
 			err := stringValidator(fv.String(), tagsCondition)
 			if err != nil {
@@ -272,7 +272,7 @@ func maxValidator(v int, r int) error {
 
 func sliceValidator(v reflect.Value, c []Condition) error {
 	for i := 0; i < v.Len(); i++ {
-		switch v.Index(i).Kind() { //nolint
+		switch v.Index(i).Kind() { 
 		case reflect.String:
 			err := stringValidator(v.Index(i).String(), c)
 			if err != nil {
