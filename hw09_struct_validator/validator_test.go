@@ -1,3 +1,4 @@
+//nolint
 package hw09structvalidator
 
 import (
@@ -13,7 +14,7 @@ type UserRole string
 // Test the function on different structures and other types.
 type (
 	User struct {
-		ID     string `json:"id" validate:"len:32"`
+		ID     string `json:"id" validate:"len:36"`
 		Name   string
 		Age    int      `validate:"min:18|max:50"`
 		Email  string   `validate:"regexp:^\\w+@\\w+\\.\\w+$"`
@@ -23,12 +24,7 @@ type (
 	}
 
 	App struct {
-		Version string `validate:"regexp:^\\d(\\.\\d){2}$|len:5"`
-	}
-
-	Cop struct {
-		Good User `validate:"nested"`
-		Bad  User `validate:"nested"`
+		Version string `validate:"len:5"`
 	}
 
 	Token struct {
@@ -36,92 +32,81 @@ type (
 		Payload   []byte
 		Signature []byte
 	}
+
+	Response struct {
+		Code int    `validate:"in:200,404,500"`
+		Body string `json:"omitempty"`
+	}
+
+	Order struct {
+		Price []int `validate:"min:10"`
+	}
+
+	Bucket struct {
+		Any string `validate:"qwerty:qwerty"`
+	}
+
+	Product struct {
+		Name string `validate:"len:qwerty"`
+	}
+
+	Banana struct {
+		Size int `validate:"min:qwerty"`
+	}
+
+	Ananas struct {
+		Price int `validate:"max:qwerty"`
+	}
+
+	Car struct {
+		Color string `validate:"regexp:^\\_$d++w+@\\w+\\.\\w+$"`
+	}
+
+	Bus struct {
+		Any int `validate:"in:q,w,e,r,t,y"`
+	}
 )
 
-func TestValidate(t *testing.T) {
-	var noErrors ValidationErrors
-
+func TestValidateFailedStruct(t *testing.T) {
 	tests := []struct {
-		name        string
 		in          interface{}
 		expectedErr error
 	}{
-		{
-			"not struct",
-			1,
-			ErrNotStruct,
-		},
-		{
-			"simple no errors",
-			App{"1.0.0"},
-			noErrors,
-		},
-		{
-			"simple one error",
-			App{"11.0.0"},
-			ValidationErrors{
-				ValidationError{"App.Version", fmt.Errorf("invalid regexp, invalid length")},
-			},
-		},
-		{
-			"all rule types",
-			User{
-				ID:     "5d41402abc4b2a76b9719d911017c592",
-				Name:   "Tester",
-				Age:    25,
-				Email:  "tester@test.com",
-				Role:   "stuff",
-				Phones: []string{"01234567890", "99999999999"},
-				meta:   nil,
-			},
-			noErrors,
-		},
-		{
-			"nested validation",
-			Cop{
-				User{
-					ID:     "5d41402abc4b2a76b9719d911017c592",
-					Name:   "Good cop",
-					Age:    31,
-					Email:  "good@test.com",
-					Role:   "stuff",
-					Phones: []string{"01234567890"},
-					meta:   nil,
-				},
-				User{
-					ID:     "---",
-					Name:   "Bad cop",
-					Age:    55,
-					Email:  "bad@com",
-					Role:   "cop",
-					Phones: []string{"123"},
-					meta:   nil,
-				},
-			},
-			ValidationErrors{
-				ValidationError{"Cop.Bad.ID", fmt.Errorf("invalid length")},
-				ValidationError{"Cop.Bad.Age", fmt.Errorf("invalid max")},
-				ValidationError{"Cop.Bad.Email", fmt.Errorf("invalid regexp")},
-				ValidationError{"Cop.Bad.Role", fmt.Errorf("invalid contains")},
-				ValidationError{"Cop.Bad.Phones", fmt.Errorf("invalid length")},
-			},
-		},
-		{
-			"without validation",
-			Token{
-				[]byte("test"),
-				[]byte("no"),
-				[]byte("validates"),
-			},
-			noErrors,
-		},
+		{[]int{0}, ErrIsNotStruct},
 	}
 
-	for _, tt := range tests {
+	for i, tt := range tests {
 		tt := tt
+		t.Run(fmt.Sprintf("case %d", i), func(t *testing.T) {
+			t.Parallel()
 
-		t.Run(tt.name, func(t *testing.T) {
-			require.Equal(t, tt.expectedErr, Validate(tt.in))
+			err := Validate(tt.in)
+			require.Error(t, err)
+
+			require.EqualError(t, err, tt.expectedErr.Error())
+		})
+	}
+}
+
+func TestValidateSuccess(t *testing.T) {
+	tests := []struct {
+		in          interface{}
+		expectedErr error
+	}{
+		{in: User{"f6b6fca6-7e4b-4966-bb7f-e8b531cdc109", "test", 20, "test@mail.ru", "admin", []string{"89181234567"}, []byte{}}},
+		{in: App{Version: "12345"}},
+		{in: Token{Header: []byte("test"), Payload: []byte("test"), Signature: []byte("test")}},
+		{in: Response{Code: 200, Body: "test"}},
+		{in: Order{Price: []int{10, 20, 30}}},
+	}
+
+	for i, tt := range tests {
+		tt := tt
+		t.Run(fmt.Sprintf("case %d", i), func(t *testing.T) {
+			t.Parallel()
+
+			err := Validate(tt.in)
+			require.Nil(t, err)
 		})
 	}
 }
